@@ -27,5 +27,4 @@ if [[ ${ISUCARI_APP} = 1 ]]; then
 fi
 if [[ ${ISUCARI_DB} = 1 ]]; then
   sudo systemctl restart mysql.service
-  cat ${repo}/webapp/sql/slow.sql | sudo mysql -uroot
 fi
