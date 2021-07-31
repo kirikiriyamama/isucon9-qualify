@@ -46,8 +46,8 @@ module Isucari
     end
 
     set :add_charset, ['application/json']
-    set :public_folder, File.join(__dir__, '..', '..', 'public')
-    set :root, File.join(__dir__, '..', '..')
+    set :public_folder, ENV['SINATRA_PUBLIC_FOLDER'] || File.join(__dir__, '..', '..', 'public')
+    set :root, ENV['SINATRA_ROOT'] || File.join(__dir__, '..', '..')
     set :session_secret, 'tagomoris'
     set :sessions, 'key' => 'isucari_session', 'expire_after' => 3600
 
