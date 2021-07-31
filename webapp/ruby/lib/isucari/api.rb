@@ -45,6 +45,7 @@ module Isucari
       req['Content-Type'] = 'application/json'
       req['User-Agent'] = @user_agent
       req['Authorization'] = ISUCARI_API_TOKEN
+      req['Connection'] = 'Keep-Alive'
 
       res = @shipment_service.request(req)
 
@@ -83,6 +84,7 @@ module Isucari
       req['Content-Type'] = 'application/json'
       req['User-Agent'] = @user_agent
       req['Authorization'] = ISUCARI_API_TOKEN
+      req['Connection'] = 'Keep-Alive'
 
       res = @shipment_service.request(req)
 
