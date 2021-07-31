@@ -8,14 +8,8 @@ module Isucari
 
     ISUCARI_API_TOKEN = 'Bearer 75ugk2m37a750fwir5xr-22l6h4wmue1bwrubzwd0'
 
-    def initialize(shipment_service:, payment_service:)
+    def initialize
       @user_agent = 'isucon9-qualify-webapp'
-      # @payment_service
-      s =  URI.parse(shipment_service)
-      @shipment_service = Net::HTTP.new(s.host, s.port)
-      @shipment_service.use_ssl = s.scheme == 'https'
-      @shipment_service.keep_alive_timeout = 30
-      @shipment_service.start
     end
 
     def payment_token(payment_url, param)
@@ -45,9 +39,10 @@ module Isucari
       req['Content-Type'] = 'application/json'
       req['User-Agent'] = @user_agent
       req['Authorization'] = ISUCARI_API_TOKEN
-      req['Connection'] = 'Keep-Alive'
 
-      res = @shipment_service.request(req)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      res = http.start { http.request(req) }
 
       if res.code != '200'
         raise Error, "status code #{res.code}; body #{res.body}"
@@ -84,9 +79,10 @@ module Isucari
       req['Content-Type'] = 'application/json'
       req['User-Agent'] = @user_agent
       req['Authorization'] = ISUCARI_API_TOKEN
-      req['Connection'] = 'Keep-Alive'
 
-      res = @shipment_service.request(req)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      res = http.start { http.request(req) }
 
       if res.code != '200'
         raise Error, "status code #{res.code}; body #{res.body}"
