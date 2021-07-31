@@ -641,7 +641,7 @@ module Isucari
       end
 
       begin
-        db.xquery('INSERT INTO `shippings` (`transaction_evidence_id`, `status`, `item_name`, `item_id`, `reserve_id`, `reserve_time`, `to_address`, `to_name`, `from_address`, `from_name`, `img_binary`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', transaction_evidence_id, SHIPPINGS_STATUS_INITIAL, target_item['name'], target_item['id'], scr['reserve_id'], scr['reserve_time'], buyer['address'], buyer['account_name'], seller['address'], seller['account_name'], '')
+        db.xquery('INSERT INTO `shippings` (`transaction_evidence_id`, `status`, `item_name`, `item_id`, `reserve_id`, `reserve_time`, `to_address`, `to_name`, `from_address`, `from_name`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', transaction_evidence_id, SHIPPINGS_STATUS_INITIAL, target_item['name'], target_item['id'], scr['reserve_id'], scr['reserve_time'], buyer['address'], buyer['account_name'], seller['address'], seller['account_name'])
       rescue
         db.query('ROLLBACK')
         halt_with_error 500, 'db error'

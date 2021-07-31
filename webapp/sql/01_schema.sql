@@ -62,7 +62,7 @@ CREATE TABLE `shippings` (
   `to_name` varchar(191) NOT NULL,
   `from_address` varchar(191) NOT NULL,
   `from_name` varchar(191) NOT NULL,
-  `img_binary` mediumblob NOT NULL,
+  `img_binary` mediumblob,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
