@@ -841,8 +841,12 @@ module Isucari
         halt_with_error 500, 'failed to request to shipment service'
       end
 
+      File.open("/tmp/shippings/#{transaction_evidence['id']}", 'wb') do |f|
+        f.write img
+      end
+
       begin
-        db.xquery('UPDATE `shippings` SET `status` = ?, `img_binary` = ?, `updated_at` = ? WHERE `transaction_evidence_id` = ?', SHIPPINGS_STATUS_WAIT_PICKUP, img, Time.now, transaction_evidence['id'])
+        db.xquery('UPDATE `shippings` SET `status` = ?, `img_binary` = ?, `updated_at` = ? WHERE `transaction_evidence_id` = ?', SHIPPINGS_STATUS_WAIT_PICKUP, '', Time.now, transaction_evidence['id'])
       rescue
         db.query('ROLLBACK')
         halt_with_error 500, 'db error'
@@ -1086,10 +1090,10 @@ module Isucari
         halt_with_error 403, 'qrcode not available'
       end
 
-      halt_with_error 500, 'empty qrcode image' if shipping['img_binary'].length.zero?
+      # halt_with_error 500, 'empty qrcode image' if shipping['img_binary'].length.zero?
 
       content_type 'image/png'
-      shipping['img_binary']
+      File.read("/tmp/shippings/#{transaction_evidence['id']}")
     end
 
     # postBump
