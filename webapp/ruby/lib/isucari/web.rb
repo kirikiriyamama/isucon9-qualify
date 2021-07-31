@@ -155,12 +155,13 @@ module Isucari
         }
       end
 
+      def set_config(name, val)
+        @@config ||= {}
+        @@config[name.to_sym] = val
+      end
+
       def get_config_by_name(name)
-        config = db.xquery('SELECT * FROM `configs` WHERE `name` = ?', name).first
-
-        return if config.nil?
-
-        config['val']
+        @@config[name.to_sym]
       end
 
       def get_payment_service_url
@@ -194,8 +195,7 @@ module Isucari
 
       ['payment_service_url', 'shipment_service_url'].each do |name|
         value = body_params[name]
-
-        db.xquery('INSERT INTO `configs` (name, val) VALUES (?, ?) ON DUPLICATE KEY UPDATE `val` = VALUES(`val`)', name, value)
+        set_config(name, value)
       end
 
       content_type :json
