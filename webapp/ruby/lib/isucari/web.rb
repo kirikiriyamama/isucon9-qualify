@@ -132,7 +132,7 @@ module Isucari
       end
 
       def get_category_by_id(category_id)
-        category = db.xquery('SELECT * FROM `categories` WHERE `id` = ?', category_id).first
+        category = CATEGORIES.find {|c| c['id'] == category_id}
 
         return if category.nil?
 
