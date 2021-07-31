@@ -11,5 +11,4 @@ export MYSQL_PWD=${MYSQL_PASS:-isucari}
 export LANG="C.UTF-8"
 cd $CURRENT_DIR
 
-cat slow.sql | sudo mysql -uroot
 cat 01_schema.sql 02_categories.sql ${INITIAL_SQL:-initial.sql} | mysql --defaults-file=/dev/null -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER $MYSQL_DBNAME
