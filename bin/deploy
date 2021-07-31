@@ -1,19 +1,21 @@
 #!/bin/bash
 set -o errexit -o pipefail -o xtrace
 
-root=/home/isucon/isucon9-qualify
+repo=/home/isucon/isucon9-qualify
 
-cd ${root}
+cd ${repo}
 git reset --hard HEAD
 git fetch -p
 git switch --detach origin/${1:-master}
 
-cd ${root}/webapp/ruby
+cd ${repo}/webapp/ruby
 bundle config set --local without 'development'
 bundle install
 
 sudo truncate -s 0 -c /var/log/nginx/access.log
 sudo truncate -s 0 -c /var/log/mysql/slow.log
+
+${repo}/mklink
 
 sudo systemctl daemon-reload
 sudo systemctl restart mysql.service
