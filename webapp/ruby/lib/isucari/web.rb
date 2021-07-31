@@ -67,7 +67,7 @@ module Isucari
       end
 
       def api_client
-        Thread.current[:api_client] ||= ::Isucari::API.new
+        Thread.current[:api_client] ||= ::Isucari::API.new(shipment_service: get_shipment_service_url, payment_service: get_payment_service_url)
       end
 
       def get_user
