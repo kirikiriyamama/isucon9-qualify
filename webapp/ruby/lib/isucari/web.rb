@@ -572,7 +572,7 @@ module Isucari
         halt_with_error 500, 'db error'
       end
 
-      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ?', item_id).first
+      target_item = db.xquery('SELECT id, price, created_at, updated_at FROM `items` WHERE `id` = ?', item_id).first
 
       db.query('COMMIT')
 
