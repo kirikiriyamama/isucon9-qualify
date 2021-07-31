@@ -79,15 +79,10 @@ module Isucari
       end
 
       def get_user_simple_by_id(user_id)
-        user = db.xquery('SELECT * FROM `users` WHERE `id` = ?', user_id).first
+        user = db.xquery('SELECT id, account_name, num_sell_items FROM `users` WHERE `id` = ?', user_id).first
 
         return if user.nil?
-
-        {
-          'id' => user['id'],
-          'account_name' => user['account_name'],
-          'num_sell_items' => user['num_sell_items']
-        }
+        user
       end
 
       def get_category_by_id(category_id)
