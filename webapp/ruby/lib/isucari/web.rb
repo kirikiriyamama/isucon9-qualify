@@ -322,33 +322,85 @@ module Isucari
         # paging
         begin
           db.xquery(
-            "SELECT items.id AS `items_id`, items.seller_id AS `items_seller_id`, items.buyer_id AS `items_buyer_id`, items.status AS `items_status`, items.name AS `items_name`, items.description AS `items_description`, " +
-            "items.price AS `items_price`, items.image_name AS `items_image_name`, items.category_id AS `items_category_id`, items.created_at AS `items_created_at`, items.updated_at AS `items_iupdated_at`, " +
-            "seller.id AS `s_id`, seller.account_name AS `s_account_name`, seller.address AS `s_address`, seller.num_sell_items AS `s_num_sell_items`, " +
-            "buyer.id AS `b_id`, buyer.account_name AS `b_account_name`, buyer.address AS `b_address`, buyer.num_sell_items AS `b_num_sell_items` " +
-            " FROM `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id` LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`" +
-            "WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?) AND (`items`.`created_at` < ?  OR (`items`.`created_at` <= ? AND `items`.`id` < ?))" +
-            " ORDER BY `items`.`created_at` DESC, `items`.id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
-            user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP, Time.at(created_at), Time.at(created_at), item_id
+            <<~SQL, user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP, Time.at(created_at), Time.at(created_at), item_id
+              SELECT
+                items.id AS `items_id`,
+                items.seller_id AS `items_seller_id`,
+                items.buyer_id AS `items_buyer_id`,
+                items.status AS `items_status`,
+                items.name AS `items_name`,
+                items.description AS `items_description`, 
+                items.price AS `items_price`,
+                items.image_name AS `items_image_name`,
+                items.category_id AS `items_category_id`,
+                items.created_at AS `items_created_at`,
+                items.updated_at AS `items_iupdated_at`, 
+                seller.id AS `s_id`,
+                seller.account_name AS `s_account_name`,
+                seller.address AS `s_address`,
+                seller.num_sell_items AS `s_num_sell_items`,
+                buyer.id AS `b_id`,
+                buyer.account_name AS `b_account_name`,
+                buyer.address AS `b_address`,
+                buyer.num_sell_items AS `b_num_sell_items`,
+                transaction_evidences.id AS `t_e_id`,
+                transaction_evidences.status AS `t_e_status`,
+                shippings.status AS `shipping_status`,
+                shippings.reserve_id AS `shipping_reserve_id`
+              FROM
+                `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id`
+                        LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`
+                        LEFT JOIN transaction_evidences ON `transaction_evidences`.`item_id` = `items`.`id`
+                        LEFT JOIN shippings ON `shippings`.`transaction_evidence_id` = `transaction_evidences`.`id`
+              WHERE
+                (`items`.`seller_id` = ? OR `items`.`buyer_id` = ?) AND `items`.`status` IN (?, ?, ?, ?, ?) AND (`items`.`created_at` < ?  OR (`items`.`created_at` <= ? AND `items`.`id` < ?))
+             ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}
+            SQL
           )
-        rescue
-          halt_with_error 500, 'db error'
+        # rescue
+        #   halt_with_error 500, 'db error'
         end
       else
         # 1st page
         begin
           db.xquery(
-            "SELECT items.id AS `items_id`, items.seller_id AS `items_seller_id`, items.buyer_id AS `items_buyer_id`, items.status AS `items_status`, items.name AS `items_name`, items.description AS `items_description`, " +
-            "items.price AS `items_price`, items.image_name AS `items_image_name`, items.category_id AS `items_category_id`, items.created_at AS `items_created_at`, items.updated_at AS `items_iupdated_at`, " +
-            "seller.id AS `s_id`, seller.account_name AS `s_account_name`, seller.address AS `s_address`, seller.num_sell_items AS `s_num_sell_items`, " +
-            "buyer.id AS `b_id`, buyer.account_name AS `b_account_name`, buyer.address AS `b_address`, buyer.num_sell_items AS `b_num_sell_items` " +
-            " FROM `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id` LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`" +
-            " WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?)" +
-             "ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
-            user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP
+            <<~SQL, user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP
+              SELECT
+                items.id AS `items_id`,
+                items.seller_id AS `items_seller_id`,
+                items.buyer_id AS `items_buyer_id`,
+                items.status AS `items_status`,
+                items.name AS `items_name`,
+                items.description AS `items_description`, 
+                items.price AS `items_price`,
+                items.image_name AS `items_image_name`,
+                items.category_id AS `items_category_id`,
+                items.created_at AS `items_created_at`,
+                items.updated_at AS `items_iupdated_at`, 
+                seller.id AS `s_id`,
+                seller.account_name AS `s_account_name`,
+                seller.address AS `s_address`,
+                seller.num_sell_items AS `s_num_sell_items`, 
+                buyer.id AS `b_id`,
+                buyer.account_name AS `b_account_name`,
+                buyer.address AS `b_address`,
+                buyer.num_sell_items AS `b_num_sell_items`,
+                transaction_evidences.id AS `t_e_id`,
+                transaction_evidences.status AS `t_e_status`,
+                shippings.status AS `shipping_status`,
+                shippings.reserve_id AS `shipping_reserve_id`
+              FROM
+                `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id`
+                        LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`
+                        LEFT JOIN transaction_evidences ON `transaction_evidences`.`item_id` = `items`.`id`
+                        LEFT JOIN shippings ON `shippings`.`transaction_evidence_id` = `transaction_evidences`.`id`
+              WHERE
+                (`items`.`seller_id` = ? OR `items`.`buyer_id` = ?) AND `items`.`status` IN (?, ?, ?, ?, ?)
+              ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}
+            SQL
           )
-        rescue
-          halt_with_error 500, 'db error'
+        # rescue
+        #   halt_with_error 500, 'db error'
         end
       end
 
@@ -401,21 +453,21 @@ module Isucari
           }
         end
 
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item['id']).first
-        unless transaction_evidence.nil?
-          shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?', transaction_evidence['id']).first
-          if shipping.nil?
+        # transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item['id']).first
+        unless item['t_e_id'].nil?
+          # shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?', transaction_evidence['id']).first
+          if item['shipping_status'].nil?
             halt_with_error 404, 'shipping not found'
           end
 
           ssr = begin
-            api_client.shipment_status(get_shipment_service_url, 'reserve_id' => shipping['reserve_id'])
+            api_client.shipment_status(get_shipment_service_url, 'reserve_id' => item['shipping_reserve_id'])
           rescue
             halt_with_error 500, 'failed to request to shipment service'
           end
 
-          item_detail['transaction_evidence_id'] = transaction_evidence['id']
-          item_detail['transaction_evidence_status'] = transaction_evidence['status']
+          item_detail['transaction_evidence_id'] = item['t_e_id']
+          item_detail['transaction_evidence_status'] = item['t_e_status']
           item_detail['shipping_status'] = ssr['status']
         end
 
