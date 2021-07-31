@@ -276,7 +276,13 @@ module Isucari
         # paging
         begin
           db.xquery(
-            "SELECT * FROM `items` WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
+            "SELECT items.id AS `items_id`, items.seller_id AS `items_seller_id`, items.buyer_id AS `items_buyer_id`, items.status AS `items_status`, items.name AS `items_name`, items.description AS `items_description`, " +
+            "items.price AS `items_price`, items.image_name AS `items_image_name`, items.category_id AS `items_category_id`, items.created_at AS `items_created_at`, items.updated_at AS `items_iupdated_at`, " +
+            "seller.id AS `s_id`, seller.account_name AS `s_account_name`, seller.address AS `s_address`, seller.num_sell_items AS `s_num_sell_items`, " +
+            "buyer.id AS `b_id`, buyer.account_name AS `b_account_name`, buyer.address AS `b_address`, buyer.num_sell_items AS `b_num_sell_items` " +
+            " FROM `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id` LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`" +
+            "WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?) AND (`items`.`created_at` < ?  OR (`items`.`created_at` <= ? AND `items`.`id` < ?))" +
+            " ORDER BY `items`.`created_at` DESC, `items`.id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
             user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP, Time.at(created_at), Time.at(created_at), item_id
           )
         rescue
@@ -286,7 +292,13 @@ module Isucari
         # 1st page
         begin
           db.xquery(
-            "SELECT * FROM `items` WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?) ORDER BY `created_at` DESC, `id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
+            "SELECT items.id AS `items_id`, items.seller_id AS `items_seller_id`, items.buyer_id AS `items_buyer_id`, items.status AS `items_status`, items.name AS `items_name`, items.description AS `items_description`, " +
+            "items.price AS `items_price`, items.image_name AS `items_image_name`, items.category_id AS `items_category_id`, items.created_at AS `items_created_at`, items.updated_at AS `items_iupdated_at`, " +
+            "seller.id AS `s_id`, seller.account_name AS `s_account_name`, seller.address AS `s_address`, seller.num_sell_items AS `s_num_sell_items`, " +
+            "buyer.id AS `b_id`, buyer.account_name AS `b_account_name`, buyer.address AS `b_address`, buyer.num_sell_items AS `b_num_sell_items` " +
+            " FROM `items` LEFT JOIN users AS seller ON `seller`.`id` = `items`.`seller_id` LEFT JOIN users AS buyer ON `buyer`.`id` = `items`.`buyer_id`" +
+            " WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?, ?, ?, ?, ?)" +
+             "ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT #{TRANSACTIONS_PER_PAGE + 1}",
             user['id'], user['id'], ITEM_STATUS_ON_SALE, ITEM_STATUS_TRADING, ITEM_STATUS_SOLD_OUT, ITEM_STATUS_CANCEL, ITEM_STATUS_STOP
           )
         rescue
@@ -295,43 +307,52 @@ module Isucari
       end
 
       item_details = items.map do |item|
-        seller = get_user_simple_by_id(item['seller_id'])
-        if seller.nil?
+        # seller = get_user_simple_by_id(item['seller_id'])
+        if item['items_seller_id'] && item['items_seller_id'] != item['s_id']
           halt_with_error 404, 'seller not found'
         end
 
-        category = get_category_by_id(item['category_id'])
+        category = get_category_by_id(item['items_category_id'])
         if category.nil?
           halt_with_error 404, 'category not found'
         end
 
+        # user = db.xquery('SELECT id, account_name, num_sell_items FROM `users` WHERE `id` = ?', user_id).first
         item_detail = {
-          'id' => item['id'],
-          'seller_id' => item['seller_id'],
-          'seller' => seller,
+          'id' => item['items_id'],
+          'seller_id' => item['items_seller_id'],
+          'seller' => {
+            'id' => item['s_id'],
+            'account_name' => item['s_account_name'],
+            'num_sell_items' => item['s_num_sell_items']
+          },
           # buyer_id
           # buyer
-          'status' => item['status'],
-          'name' => item['name'],
-          'price' => item['price'],
-          'description' => item['description'],
-          'image_url' => get_image_url(item['image_name']),
-          'category_id' => item['category_id'],
+          'status' => item['items_status'],
+          'name' => item['items_name'],
+          'price' => item['items_price'],
+          'description' => item['items_description'],
+          'image_url' => get_image_url(item['items_image_name']),
+          'category_id' => item['items_category_id'],
           # transaction_evidence_id
           # transaction_evidence_status
           # shipping_status
           'category' => category,
-          'created_at' => item['created_at'].to_i
+          'created_at' => item['items_created_at'].to_i
         }
 
-        if item['buyer_id'] != 0
-          buyer = get_user_simple_by_id(item['buyer_id'])
-          if buyer.nil?
+        if item['items_buyer_id'] != 0
+          # buyer = get_user_simple_by_id(item['buyer_id'])
+          if item['items_buyer_id'] != item['b_id']
             halt_with_error 404, 'buyer not found'
           end
 
-          item_detail['buyer_id'] = item['buyer_id']
-          item_detail['buyer'] = buyer
+          item_detail['buyer_id'] = item['items_buyer_id']
+          item_detail['buyer'] = {
+            'id' => item['b_id'],
+            'account_name' => item['b_account_name'],
+            'num_sell_items' => item['b_num_sell_items']
+          }
         end
 
         transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item['id']).first
