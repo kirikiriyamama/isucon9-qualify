@@ -75,11 +75,11 @@ module Isucari
 
         return unless user_id
 
-        db.xquery('SELECT * FROM `users` WHERE `id` = ?', user_id).first
+        db.xquery('SELECT * FROM `users` WHERE `id` = ? LIMIT 1', user_id)
       end
 
       def get_user_simple_by_id(user_id)
-        user = db.xquery('SELECT * FROM `users` WHERE `id` = ?', user_id).first
+        user = db.xquery('SELECT * FROM `users` WHERE `id` = ? LIMIt 1', user_id)
 
         return if user.nil?
 
@@ -91,7 +91,7 @@ module Isucari
       end
 
       def get_category_by_id(category_id)
-        category = db.xquery('SELECT * FROM `categories` WHERE `id` = ?', category_id).first
+        category = db.xquery('SELECT * FROM `categories` WHERE `id` = ? LIMIT 1', category_id)
 
         return if category.nil?
 
@@ -112,7 +112,7 @@ module Isucari
       end
 
       def get_config_by_name(name)
-        config = db.xquery('SELECT * FROM `configs` WHERE `name` = ?', name).first
+        config = db.xquery('SELECT * FROM `configs` WHERE `name` = ? LIMIT 1', name)
 
         return if config.nil?
 
@@ -339,9 +339,9 @@ module Isucari
           item_detail['buyer'] = buyer
         end
 
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item['id']).first
+        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? LIMIT 1', item['id'])
         unless transaction_evidence.nil?
-          shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?', transaction_evidence['id']).first
+          shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? LIMIT 1', transaction_evidence['id'])
           if shipping.nil?
             db.query('ROLLBACK')
             halt_with_error 404, 'shipping not found'
@@ -441,7 +441,7 @@ module Isucari
 
       user = get_user
 
-      item = db.xquery('SELECT * FROM `items` WHERE `id` = ?', item_id).first
+      item = db.xquery('SELECT * FROM `items` WHERE `id` = ? LIMIT 1', item_id)
       halt_with_error 404, 'item not found' if item.nil?
 
       category = get_category_by_id(item['category_id'])
@@ -476,9 +476,9 @@ module Isucari
         item_detail['buyer_id'] = item['buyer_id']
         item_detail['buyer'] = buyer
 
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item['id']).first
+        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? LIMIT 1', item['id'])
         unless transaction_evidence.nil?
-          shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?', transaction_evidence['id']).first
+          shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? LIMIT 1', transaction_evidence['id'])
           halt_with_error 404, 'shipping not found' if shipping.nil?
 
           item_detail['transaction_evidence_id'] = transaction_evidence['id']
@@ -505,7 +505,7 @@ module Isucari
       seller = get_user
       halt_with_error 404, 'user not found' if seller.nil?
 
-      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ?', item_id).first
+      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? LIMIT 1', item_id)
       halt_with_error 404, 'item not found' if target_item.nil?
 
       if target_item['seller_id'] != seller['id']
@@ -514,7 +514,7 @@ module Isucari
 
       db.query('BEGIN')
 
-      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
       if target_item['status'] != ITEM_STATUS_ON_SALE
         db.query('ROLLBACK')
@@ -528,7 +528,7 @@ module Isucari
         halt_with_error 500, 'db error'
       end
 
-      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ?', item_id).first
+      target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? LIMIT 1', item_id)
 
       db.query('COMMIT')
 
@@ -556,7 +556,7 @@ module Isucari
       db.query('BEGIN')
 
       begin
-        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if target_item.nil?
           db.query('ROLLBACK')
@@ -578,7 +578,7 @@ module Isucari
       end
 
       begin
-        seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE', target_item['seller_id']).first
+        seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE LIMIT 1', target_item['seller_id'])
 
         if seller.nil?
           db.query('ROLLBACK')
@@ -700,7 +700,7 @@ module Isucari
 
       db.query('BEGIN')
 
-      seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE', user['id']).first
+      seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE LIMIT 1', user['id'])
       if seller.nil?
         halt_with_error 404, 'user not found'
       end
@@ -737,7 +737,7 @@ module Isucari
       seller = get_user
       halt_with_error 404, 'seller not found' if seller.nil?
 
-      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item_id).first
+      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? LIMIT 1', item_id)
       halt_with_error 404, 'transaction_evidences not found' if transaction_evidence.nil?
 
       halt_with_error 403, '権限がありません' if transaction_evidence['seller_id'] != seller['id']
@@ -745,7 +745,7 @@ module Isucari
       db.query('BEGIN')
 
       begin
-        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if item.nil?
           db.query('ROLLBACK')
@@ -762,7 +762,7 @@ module Isucari
       end
 
       begin
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ? FOR UPDATE', transaction_evidence['id']).first
+        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ? FOR UPDATE LIMIT 1', transaction_evidence['id'])
 
         if transaction_evidence.nil?
           db.query('ROLLBACK')
@@ -779,7 +779,7 @@ module Isucari
       end
 
       begin
-        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE', transaction_evidence['id']).first
+        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE LIMIT 1', transaction_evidence['id'])
 
         if shipping.nil?
           db.query('ROLLBACK')
@@ -824,7 +824,7 @@ module Isucari
       seller = get_user
       halt_with_error 404, 'seller not found' if seller.nil?
 
-      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item_id).first
+      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? LIMIT 1', item_id)
       halt_with_error 404, 'transaction_evidence not found' if transaction_evidence.nil?
 
       if transaction_evidence['seller_id'] != seller['id']
@@ -834,7 +834,7 @@ module Isucari
       db.query('BEGIN')
 
       begin
-        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if item.nil?
           db.query('ROLLBACK')
@@ -851,7 +851,7 @@ module Isucari
       end
 
       begin
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ? FOR UPDATE', transaction_evidence['id']).first
+        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ? FOR UPDATE LIMIT 1', transaction_evidence['id'])
 
         if transaction_evidence.nil?
           db.query('ROLLBACK')
@@ -867,7 +867,7 @@ module Isucari
       end
 
       begin
-        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE', transaction_evidence['id']).first
+        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE LIMIT 1', transaction_evidence['id'])
 
         if shipping.nil?
           db.query('ROLLBACK')
@@ -924,7 +924,7 @@ module Isucari
       buyer = get_user
       halt_with_error 404, 'buyer not found' if buyer.nil?
 
-      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ?', item_id).first
+      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? LIMIT 1', item_id)
       halt_with_error 404, 'transaction_evidence not found' if transaction_evidence.nil?
 
       if transaction_evidence['buyer_id'] != buyer['id']
@@ -934,7 +934,7 @@ module Isucari
       db.query('BEGIN')
 
       begin
-        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+        item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if item.nil?
           db.query('ROLLBACK')
@@ -951,7 +951,7 @@ module Isucari
       end
 
       begin
-        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? FOR UPDATE', item_id).first
+        transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `item_id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if transaction_evidence.nil?
           db.query('ROLLBACK')
@@ -968,7 +968,7 @@ module Isucari
       end
 
       begin
-        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE', transaction_evidence['id']).first
+        shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? FOR UPDATE LIMIT 1', transaction_evidence['id'])
 
         if shipping.nil?
           db.query('ROLLBACK')
@@ -1028,14 +1028,14 @@ module Isucari
       seller = get_user
       halt_with_error 404, 'seller not found' if seller.nil?
 
-      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ?', transaction_evidence_id).first
+      transaction_evidence = db.xquery('SELECT * FROM `transaction_evidences` WHERE `id` = ? LIMIT 1', transaction_evidence_id)
       halt_with_error 404, 'transaction_evidences not found' if transaction_evidence.nil?
 
       if transaction_evidence['seller_id'] != seller['id']
         halt_with_error 403, '権限がありません'
       end
 
-      shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?', transaction_evidence['id']).first
+      shipping = db.xquery('SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ? LIMIT 1', transaction_evidence['id'])
       halt_with_error 404, 'shippings not found' if shipping.nil?
 
       if shipping['status'] != SHIPPINGS_STATUS_WAIT_PICKUP && shipping != SHIPPINGS_STATUS_SHIPPING
@@ -1061,7 +1061,7 @@ module Isucari
       db.query('BEGIN')
 
       begin
-        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE', item_id).first
+        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? FOR UPDATE LIMIT 1', item_id)
 
         if target_item.nil?
           db.query('ROLLBACK')
@@ -1078,7 +1078,7 @@ module Isucari
       end
 
       begin
-        seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE', user['id']).first
+        seller = db.xquery('SELECT * FROM `users` WHERE `id` = ? FOR UPDATE LIMIT 1', user['id'])
 
         if seller.nil?
           db.query('ROLLBACK')
@@ -1110,7 +1110,7 @@ module Isucari
       end
 
       begin
-        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ?', item_id).first
+        target_item = db.xquery('SELECT * FROM `items` WHERE `id` = ? LIMIT 1', item_id)
       rescue
         db.query('ROLLBACK')
         halt_with_error 500, 'db error'
@@ -1153,7 +1153,7 @@ module Isucari
         halt_with_error 400, 'all parameters are required'
       end
 
-      user = db.xquery('SELECT * FROM `users` WHERE `account_name` = ?', account_name).first
+      user = db.xquery('SELECT * FROM `users` WHERE `account_name` = ? LIMIT 1', account_name)
 
       if user.nil? || BCrypt::Password.new(user['hashed_password']) != password
         halt_with_error 401, 'アカウント名かパスワードが間違えています'
