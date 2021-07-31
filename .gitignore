@@ -1,0 +1,4 @@
+webapp/public/upload
+webapp/ruby/.bundle/ruby/
+webapp/ruby/.ruby-version
+webapp/sql/initial.sql
