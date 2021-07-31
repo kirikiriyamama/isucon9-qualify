@@ -1,0 +1,6 @@
+#!/bin/bash
+set -o errexit -o pipefail -o xtrace
+
+for host in isucon9-qualify-{1..3}; do
+  ssh ${host} /home/isucon/isucon9-qualify/bin/.x /home/isucon/isucon9-qualify/bin/deploy ${1:-master}
+done
