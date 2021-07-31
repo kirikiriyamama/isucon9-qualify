@@ -89,6 +89,9 @@ module Isucari
     configure :development do
       require 'sinatra/reloader'
       register Sinatra::Reloader
+
+      require 'rack-lineprof'
+      use Rack::Lineprof
     end
 
     set :add_charset, ['application/json']
