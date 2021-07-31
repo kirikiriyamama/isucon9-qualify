@@ -320,6 +320,7 @@ module Isucari
 
       item_id = params['item_id'].to_i
       created_at = params['created_at'].to_i
+      shipment_api_thread = []
 
       items = if item_id > 0 && created_at > 0
         # paging
@@ -463,16 +464,26 @@ module Isucari
             halt_with_error 404, 'shipping not found'
           end
 
-          ssr = begin
-            api_client.shipment_status(get_shipment_service_url, 'reserve_id' => item['shipping_reserve_id'])
-          rescue
-            halt_with_error 500, 'failed to request to shipment service'
+          shipment_api_thread << Thread.new do
+            ssr = begin
+              api_client.shipment_status(get_shipment_service_url, 'reserve_id' => item['shipping_reserve_id'])
+            rescue
+              halt_with_error 500, 'failed to request to shipment service'
+            end
+
+            item_detail['shipping_status'] = ssr['status']
           end
+          # ssr = begin
+          #   api_client.shipment_status(get_shipment_service_url, 'reserve_id' => item['shipping_reserve_id'])
+          # rescue
+          #   halt_with_error 500, 'failed to request to shipment service'
+          # end
 
           item_detail['transaction_evidence_id'] = item['t_e_id']
           item_detail['transaction_evidence_status'] = item['t_e_status']
-          item_detail['shipping_status'] = ssr['status']
+          # item_detail['shipping_status'] = ssr['status']
         end
+        shipment_api_thread.each(&:join)
 
         item_detail
       end
